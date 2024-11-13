@@ -4,12 +4,12 @@ import sqlalchemy as _sql
 import sqlalchemy.orm  as _orm
 import passlib.hash as _hash
 
-import database  as _database
+from .database import Base
 
 from passlib.context import CryptContext
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-class User(_database.Base):
+class User(Base):
     __tablename__ = "users"
     id = _sql.Column(_sql.Integer,primary_key=True,index=True)
     email = _sql.Column(_sql.String,unique=True,index=True)
@@ -33,7 +33,7 @@ class User(_database.Base):
           "date_created":self.date_created.isoformat() if self.date_created else None,
        }
 
-class Task(_database.Base):
+class Task(Base):
    __tablename__ = "tasks"
    id = _sql.Column(_sql.Integer,primary_key=True,index=True)
    task_title = _sql.Column(_sql.String)

@@ -10,10 +10,14 @@ from fastapi import HTTPException, Depends
 import dotenv as _env
 from typing import Optional
 
-import database as _database
-import schemas as _schema
-import models as _model
+# import database as _database
+from .database import *
+# import schemas as _schema
+from .schemas import *
+# import models as _model
+from .models import *
 import os as _os
+import logging
 
 from passlib.context import CryptContext
 
@@ -25,18 +29,24 @@ JWT_SECRETE =""  # _os.environ["JWT_SECRETE"]
 # helper for checking if one is authendictated
 oauth2schema = _security.OAuth2PasswordBearer("/api/token")
 
-def _create_database():
-    return _database.Base.metadata.create_all(bind=_database.engine)
+logging.basicConfig(level=logging.INFO)
+
+def create_database():
+
+    # return Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+
+    logging.info("Database tables created or checked")
 
 async def get_db():
-    db= _database.SessionLocal()
+    db= SessionLocal()
     try:
         yield db
     finally:
         db.close()    
 
 
-def create_user_(user:_schema.UserCreate, db:_orm.Session):
+def create_user_(user:UserCreate, db:_orm.Session):
 
     try:
         valid = _checkmail.validate_email(user.email)
@@ -44,7 +54,7 @@ def create_user_(user:_schema.UserCreate, db:_orm.Session):
     except _checkmail.EmailNotValidError:
         raise HTTPException(status_code=400,detail="Please enter a valid email")
     
-    user_obj = _model.User(email=email,name=user.name,hashed_password=_hash.bcrypt.hash(user.password))
+    user_obj = User(email=email,name=user.name,hashed_password=_hash.bcrypt.hash(user.password))
 
     db.add(user_obj)
     db.commit()
@@ -53,9 +63,9 @@ def create_user_(user:_schema.UserCreate, db:_orm.Session):
 
 
 def get_user_by_email(email:str,db:_orm.Session):
-    return db.query(_model.User).filter(_model.User.email == email).first()
+    return db.query(User).filter(User.email == email).first()
 
-def create_token(user:_model.User):
+def create_token(user:User):
     # user_obj = _schema.User.model_validate(user)
     user_obj = user.to_dict()
     # token = _jwt.encode(user_obj.model_dump(),JWT_SECRETE)
@@ -100,7 +110,7 @@ def get_current_user(db:_orm.Session = Depends(get_db),token:str=Depends(oauth2s
         user_id = payload["id"]
         if user_id is None:
             raise HTTPException(status_code=401, detail="Invalid token")
-        user = db.query(_model.User).filter(_model.User.id == user_id).first()
+        user = db.query(User).filter(User.id == user_id).first()
         if user is None:
             raise HTTPException(status_code=401,detail="User not found")
         
@@ -110,39 +120,39 @@ def get_current_user(db:_orm.Session = Depends(get_db),token:str=Depends(oauth2s
             detail="Invalid email or password"
         )
 
-    return _schema.User.model_validate(user)
+    return User.model_validate(user)
 
-def create_task(user:_schema.User, db:_orm.Session, task:_schema.TaskCreate):
+def create_task(user:User, db:_orm.Session, task:TaskCreate):
     task_data = task.model_dump()
     task_data["owner_id"] = user.id
     task_data["is_completed"] = False
-    task = _model.Task(**task_data)
+    task = Task(**task_data)
     db.add(task)
     db.commit()
     db.refresh(task)
-    return _schema.Task.model_validate(task)
+    return Task.model_validate(task)
 
-def create_user_Task(db:_orm.Session,user_id:int, task:_schema.TaskCreate):
-    user_task =  _model.Task(**task.model_dump(),owner_id=user_id)
+def create_user_Task(db:_orm.Session,user_id:int, task:TaskCreate):
+    user_task =  Task(**task.model_dump(),owner_id=user_id)
     db.add(user_task)
     db.commit()
     db.refresh(user_task)
-    return _schema.Task.model_validate(user_task)
+    return Task.model_validate(user_task)
 
 
-def get_user_task(user:_schema.User,db:_orm.Session):
-    tasks = db.query(_model.Task).filter(_model.Task.owner_id == user.id).all()
-    return list(map(_schema.Task.from_orm,tasks))
+def get_user_task(user:User,db:_orm.Session):
+    tasks = db.query(Task).filter(Task.owner_id == user.id).all()
+    return list(map(Task.from_orm,tasks))
     # return [task.model_dump for task in tasks]
 
 def updateTask(
-        user:_schema.User, 
+        user:User, 
         task_id:int, 
         db:_orm.Session, 
         task_title:Optional[str] = None, # added the title also
         is_completed:Optional[bool] = None  # is_completed:bool :converting to Optional Field
         ):
-    task = db.query(_model.Task).filter(_model.Task.id == task_id, _model.Task.owner_id == user.id).first()
+    task = db.query(Task).filter(Task.id == task_id,Task.owner_id == user.id).first()
 
     # if task:
         # task.is_completed = is_completed
@@ -166,10 +176,10 @@ def updateTask(
     return task
 
 def deleteTask(
-        user:_schema.User, 
+        user:User, 
         task_id:int, 
         db:_orm.Session, ):
-    tasks = db.query(_model.Task).filter(_model.Task.id==task_id,_model.Task.owner_id == user.id).first()
+    tasks = db.query(Task).filter(Task.id==task_id,Task.owner_id == user.id).first()
 
     if not tasks:
         raise HTTPException(status_code=404,detail="Task not found")

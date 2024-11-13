@@ -1,6 +1,8 @@
-import services as _serv
+from services import create_database
+import logging
 
+logging.basicConfig(level=logging.INFO)
 
 if __name__ == "__main__" :
-    _serv._create_database()
+    create_database()
     print("Data Created Here...")
