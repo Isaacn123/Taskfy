@@ -4,7 +4,7 @@ import sqlalchemy as _sql
 import sqlalchemy.orm  as _orm
 import passlib.hash as _hash
 
-from .database import Base
+from database import Base
 
 from passlib.context import CryptContext
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

@@ -5,9 +5,9 @@ from typing import Union,List
 import fastapi.security as _security
 from typing import Optional
 
-from .services import  create_database, get_db, get_current_user,get_user_by_email,create_token,create_task,create_user_,create_user_Task,authenticate_user,get_user_task,updateTask,deleteTask
+from services import  create_database, get_db, get_current_user,get_user_by_email,create_token,create_task,create_user_,create_user_Task,authenticate_user,get_user_task,updateTask,deleteTask
 # import schemas as _schema
-from .schemas import UserCreate,Task,TaskCreate,User
+from schemas import UserCreate,Task,TaskCreate,User
 # import models as _model
 # from .schemas import *
 # from .models import User

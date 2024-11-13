@@ -11,11 +11,11 @@ import dotenv as _env
 from typing import Optional
 
 # import database as _database
-from .database import *
+from database import *
 # import schemas as _schema
-from .schemas import *
+from schemas import *
 # import models as _model
-from .models import *
+from models import *
 import os as _os
 import logging
 
