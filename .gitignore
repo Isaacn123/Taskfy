@@ -35,6 +35,7 @@ app/
 .pub-cache/
 .pub/
 /build/
+.venv/
 
 # Symbolication related
 app.*.symbols
