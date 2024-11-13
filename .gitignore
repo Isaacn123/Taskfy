@@ -39,6 +39,8 @@ app/
 
 # Symbolication related
 app.*.symbols
+requirements_bk3.txt
+requirements_bk.txt
 
 # Obfuscation related
 app.*.map.json
